@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.UserMapper">
+    <update id="updateParticipant">
+        update user
+        <set>
+            <if test = "fName != null">
+                fName = #{fName},
+            </if>
+            <if test = "lName != null">
+                lName = #{lName},
+            </if>
+            <if test = "email != null">
+                email = #{email},
+            </if>
+            <if test = "degree != null">
+                degree = #{degree},
+            </if>
+            <if test = "major != null">
+                major = #{major},
+            </if>
+            <if test = "numOfExp != null">
+                numOfExp = #{numOfExp},
+            </if>
+            <if test = "rOrI != null">
+                rOrI = #{rOrI},
+            </if>
+            <if test = "timeZone != null">
+                timeZone = #{timeZone},
+            </if>
+            <if test = "school != null">
+                school= #{school},
+            </if>
+            <if test = "year != null">
+                `year` = #{year},
+            </if>
+            <if test = "teamId != null">
+                teamId = #{teamId},
+            </if>
+            <if test = "poolId != null">
+                poolId = #{poolId},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <update id="updateAdmin">
+        update user
+        <set>
+            <if test = "fName != null">
+                fName = #{fName},
+            </if>
+            <if test = "lName != null">
+                lName = #{lName},
+            </if>
+            <if test = "email != null">
+                email = #{email},
+            </if>
+            <if test = "level != null">
+                `level` = #{level},
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+
+
+    <select id="getUserById" resultMap="userMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+    <select id="getAllUser" resultMap="userMap">
+        SELECT * FROM user
+    </select>
+    <select id="getParticipantById" resultMap="userMap">
+        SELECT * FROM user WHERE uType='p' AND id = #{id}
+    </select>
+    <select id="getAllParticipant" resultMap="userMap">
+        SELECT * FROM user WHERE uType='p'
+    </select>
+    <select id="getAdminById" resultMap="userMap">
+        SELECT * FROM user WHERE uType='a' AND id = #{id}
+    </select>
+    <select id="getAllAdmin" resultMap="userMap">
+        SELECT * FROM user WHERE uType='a'
+    </select>
+    <select id="getUserByIdAndPassword" resultType="com.tavern.ling.entity.User">
+        SELECT * FROM user WHERE id = #{id} AND password =#{password}
+    </select>
+    <select id="getUserByEmailAndPassword" resultType="com.tavern.ling.entity.User">
+        SELECT * FROM user WHERE email = #{email} AND password =#{password}
+    </select>
+
+
+    <resultMap type="com.tavern.ling.entity.User" id="userMap">
+        <id property="id" column="id"/>
+        <result property="password" column="password"/>
+        <result property="fName" column="fName"/>
+        <result property="lName" column="lName"/>
+        <result property="email" column="email"/>
+        <discriminator javaType="String" column="uType">
+            <case value="p" resultType="com.tavern.ling.entity.Participant">
+                <result property="numOfExp" column="numOfExp"/>
+                <result property="major" column="major"/>
+                <result property="degree" column="degree"/>
+                <result property="rOrI" column="rOrI"/>
+                <result property="timeZone" column="timeZone"/>
+                <result property="school" column="school"/>
+                <result property="year" column="year"/>
+                <result property="teamId" column="teamId"/>
+            </case>
+            <case value="a" resultType="com.tavern.ling.entity.Admin">
+                <result property="level" column="level"/>
+            </case>
+        </discriminator>
+    </resultMap>
+</mapper>

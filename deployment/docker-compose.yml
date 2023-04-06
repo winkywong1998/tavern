@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  mysqldb:
+    container_name: mysqldb
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: tavern
+    restart: always
+    volumes:
+      - ./tavern.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tavern-network
+  
+  backend:
+    image: xxxxxxxxx233/tavern-backend
+    depends_on:
+      - mysqldb
+    restart: always
+    networks:
+      - tavern-network
+  
+  frontend:
+    image: xxxxxxxxx233/tavern-frontend
+    restart: always
+    networks:
+      - tavern-network
+  
+  nginx:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - 8080:8080
+    restart: always
+    networks:
+      - tavern-network
+
+networks:
+  tavern-network:

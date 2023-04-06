@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.PostMapper">
+    <update id="update">
+        update post
+        <set>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            `time`= CURRENT_TIMESTAMP,
+            companyId = #{companyId}
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    <select id="getAll" resultMap="postMap">
+        select p.*, user.fname, user.lname from (SELECT post.*, company.name, company.score from post left join company on post.companyId = company.id) p left join user on p.creatorId = user.id ORDER BY `time` DESC;
+    </select>
+    <select id="getByCreatorId" resultMap="postMap">
+        SELECT post.*, company.name, company.score from post left join company on post.companyId = company.id where post.creatorid = #{id} ORDER BY `time` DESC;
+    </select>
+    <select id="getPage" resultMap="postMap">
+        select p.*, user.fname, user.lname from (SELECT post.*, company.name, company.score from post left join company on post.companyId = company.id) p left join user on p.creatorId = user.id ORDER BY `time` DESC limit #{pageNum}, #{pageSize}
+    </select>
+
+    <select id="getById" resultMap="postMapWithComment">
+        select p.*, user.fname, user.lname from (SELECT post.*, company.name, company.score from post left join company on post.companyId = company.id where post.id = #{id}) p left join user on p.creatorId = user.id
+    </select>
+
+    <select id="getPostByCompany" resultMap="postMap">
+        select p.*, user.fname, user.lname from (SELECT post.*, company.name, company.score from post inner join company on post.companyId = company.id where post.companyId = #{companyId}) p left join user on p.creatorId = user.id ORDER BY `time` DESC limit #{pageNum}, #{pageSize}
+    </select>
+    <resultMap type="com.tavern.ling.entity.Post" id="postMap">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="time" column="time"/>
+        <result property="clickNum" column="clickNum"/>
+        <association property="company" column="companyId" javaType="com.tavern.ling.entity.Company">
+            <result property="id" column="companyId"/>
+            <result property="name" column="name"/>
+            <result property="score" column="score"/>
+        </association>
+        <association property="creator" column="creatorId" javaType="com.tavern.ling.entity.Participant">
+            <result property="id" column="creatorId"/>
+            <result property="fName" column="fName"/>
+            <result property="lName" column="lName"/>
+        </association>
+    </resultMap>
+
+    <resultMap type="com.tavern.ling.entity.PostWithComment" id="postMapWithComment">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="time" column="time"/>
+        <result property="clickNum" column="clickNum"/>
+        <association property="company" column="companyId" javaType="com.tavern.ling.entity.Company">
+            <result property="id" column="companyId"/>
+            <result property="name" column="name"/>
+            <result property="score" column="score"/>
+        </association>
+        <association property="creator" column="creatorId" javaType="com.tavern.ling.entity.Participant">
+            <result property="id" column="creatorId"/>
+            <result property="fName" column="fName"/>
+            <result property="lName" column="lName"/>
+        </association>
+        <collection property="comments" select="com.tavern.ling.mapper.CommentMapper.getByPost" column="id"/>
+    </resultMap>
+</mapper>

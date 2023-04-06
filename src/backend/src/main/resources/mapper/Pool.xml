@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.PoolMapper">
+    <update id="joinPool">
+        UPDATE user SET poolId = #{poolId} WHERE id = #{participantId}
+    </update>
+
+    <update id="clearPool">
+        UPDATE user SET poolId = 1 WHERE poolId = #{poolId}
+    </update>
+
+    <update id="clearFirstN">
+        UPDATE user SET poolId = 1 WHERE poolId = #{poolId} LIMIT #{rowNum}
+    </update>
+
+    <select id="getAllInPool" resultMap="userMap">
+        SELECT * FROM user WHERE poolId = #{poolId} AND uType = 'p'
+    </select>
+
+    <resultMap type="com.tavern.ling.entity.User" id="userMap">
+        <id property="id" column="id"/>
+        <result property="password" column="password"/>
+        <result property="fName" column="fName"/>
+        <result property="lName" column="lName"/>
+        <result property="email" column="email"/>
+        <discriminator javaType="String" column="uType">
+            <case value="p" resultType="com.tavern.ling.entity.Participant">
+                <result property="numOfExp" column="numOfExp"/>
+                <result property="major" column="major"/>
+                <result property="degree" column="degree"/>
+                <result property="rOrI" column="rOrI"/>
+                <result property="timeZone" column="timeZone"/>
+                <result property="school" column="school"/>
+                <result property="year" column="year"/>
+                <result property="teamId" column="teamId"/>
+            </case>
+            <case value="a" resultType="com.tavern.ling.entity.Admin">
+                <result property="level" column="level"/>
+            </case>
+        </discriminator>
+    </resultMap>
+</mapper>

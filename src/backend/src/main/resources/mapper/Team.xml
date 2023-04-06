@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.TeamMapper">
+    <select id="getAllTeam" resultMap="teamMap">
+        select * from team
+    </select>
+    <select id="getById" resultMap="teamMap">
+        select * from team where id = #{id}
+    </select>
+    <select id="getPage" resultMap="teamMap">
+        select * from team
+        <where>
+            <if test = "teamSize != 0">
+                num_member = #{teamSize}
+            </if>
+        </where>
+        limit #{pageNum}, #{pageSize}
+    </select>
+    <select id="countTeamByTeamSize" resultType="Integer">
+        select count(*) from team
+        <where>
+            <if test = "teamSize != 0">
+                num_member = #{teamSize}
+            </if>
+        </where>
+    </select>
+    <select id="getParticipantsByTeam" resultType="com.tavern.ling.entity.Participant">
+        select user.id,
+               user.fname,
+               user.lname,
+               user.email,
+               user.numOfExp,
+               user.major,
+               user.degree,
+               user.rOrI,
+               user.timeZone,
+               user.school,
+               user.year
+               from user left join user_team on user.id = user_team.userid where user_team.teamId = #{teamId} and user.uType = 'p'
+    </select>
+    <resultMap type="com.tavern.ling.entity.Team" id="teamMap">
+        <id property="id" column="id"/>
+        <result property="numOfMember" column="num_member"/>
+        <collection property="member" select="com.tavern.ling.mapper.TeamMapper.getParticipantsByTeam" column="id"/>
+    </resultMap>
+</mapper>

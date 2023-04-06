@@ -1,0 +1,20 @@
+.post-create-form {
+    justify-content: center;
+}
+
+.post-form-content {
+    height: 20vh;
+    width: 100%;
+}
+
+.post-user-input {
+    filter: brightness(90%);
+}
+
+.post-user-input:hover {
+    filter: brightness(100%);
+}
+
+.post-user-input:focus {
+    filter: brightness(100%);
+}

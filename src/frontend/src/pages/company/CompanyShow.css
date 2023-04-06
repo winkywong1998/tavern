@@ -1,0 +1,20 @@
+.company-info {
+    display: flex;
+    background-color: white;
+    padding: 3% 5%;
+    margin-top: 2%;
+    border-radius: 8px;
+    justify-content: flex-start;
+}
+.company-icon {
+    height: 40px;
+    width: auto;
+    max-width: 100%;
+}
+.company-stats {
+    margin-left: 5%;
+}
+.company-description {
+    margin-left: 5%;
+    width: 30%;
+}

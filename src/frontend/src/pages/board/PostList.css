@@ -1,0 +1,24 @@
+
+.post-title {
+    text-decoration: none;
+}
+
+.post-li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-li:hover {
+    filter: brightness(90%);
+}
+
+.post-vlist1 {
+    justify-content: flex-start;
+}
+
+.post-vlist2 {
+    margin-left: auto;
+    margin-right: 0;
+    text-align: right;
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.CommentMapper">
+
+    <select id="getById" resultMap="commentMap">
+        select comment.*, user.fname, user.lname from comment left join user on comment.creatorId = user.id WHERE comment.id = #{id}
+    </select>
+    <select id="getByPost" resultMap="commentMap">
+        select comment.*, user.fname, user.lname from comment left join user on comment.creatorId = user.id WHERE comment.postId = #{id};
+    </select>
+    <update id="update">
+        update comment
+        <set>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            `time`= CURRENT_TIMESTAMP,
+            companyId = #{companyId}
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+    <resultMap type="com.tavern.ling.entity.Comment" id="commentMap">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="time" column="time"/>
+        <result property="postId" column="postId"/>
+        <result property="likeCount" column="likeCount"/>
+        <result property="dislikeCount" column="dislikeCount"/>
+        <association property="creator" column="creatorId" javaType="com.tavern.ling.entity.Participant">
+            <result property="id" column="creatorId"/>
+            <result property="fName" column="fName"/>
+            <result property="lName" column="lName"/>
+        </association>
+    </resultMap>
+</mapper>

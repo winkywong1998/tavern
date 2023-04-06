@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tavern.ling.mapper.MeetingMapper">
+    <insert id="add" parameterType="com.tavern.ling.entity.Meeting"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO meeting
+        (title, hostId, meetingTime, meetingStatus, isGroupMeeting, description)
+        VALUES (#{title}, #{hostId}, #{meetingTime}, 0, #{isGroupMeeting}, #{description});
+    </insert>
+    
+    <insert id="addMeetingTeamRelation">
+        INSERT INTO meeting_team
+        (meetingId, teamId)
+        VALUES (#{meetingId}, #{teamId})
+    </insert>
+
+    <insert id="addMeetingTeamMemberRelation">
+        INSERT
+        INTO meeting_user (meetingId, userId)
+        SELECT meetingId, userId
+        FROM user_team ut
+            INNER JOIN meeting_team mt on ut.teamId = mt.teamId
+        WHERE mt.teamId = #{teamId} and meetingId = #{meetingId};
+    </insert>
+
+    <insert id="addMeetingUserRelation">
+        INSERT INTO meeting_user
+        (meetingId, userId)
+        VALUES (#{meetingId}, #{userId})
+    </insert>
+
+    <delete id="deleteMeetingTeamRelation">
+        DELETE
+        FROM meeting_team
+        WHERE meetingId = #{meetingId} AND teamId = #{teamId}
+    </delete>
+
+    <delete id="deleteMeetingTeamMemberRelation">
+        DELETE
+        FROM meeting_user
+        WHERE
+            meetingId = #{meetingId} AND
+            userId IN (
+                SELECT userId
+                FROM user_team ut
+                WHERE ut.teamId = #{teamId}
+            );
+    </delete>
+
+    <delete id="deleteMeetingUserRelation">
+        DELETE
+        FROM meeting_user
+        WHERE meetingId = #{meetingId} AND userId = #{userId}
+    </delete>
+
+    <select id="getById" resultMap="meetingMap">
+        SELECT *
+        FROM meeting
+        WHERE id = #{meetingId}
+    </select>
+
+    <select id="getIndividualMeetingById" resultMap="individualMeetingMap">
+        SELECT m.*, u.id as uid, u.fName, u.lName
+        FROM meeting_user mu
+            INNER JOIN meeting m ON mu.meetingId = m.id
+            INNER JOIN user u ON mu.userId = u.id
+        WHERE meetingId = #{meetingId}
+    </select>
+
+    <select id="getGroupMeetingById" resultMap="groupMeetingMap">
+        SELECT m.*, t.id as tid, t.num_member as tnum, u.id as uid, u.fName, u.lName
+        FROM meeting_team mt
+             INNER JOIN meeting m ON mt.meetingId = m.id
+             INNER JOIN team t on mt.teamId = t.id
+             INNER JOIN user_team ut on mt.teamId = ut.teamId
+             INNER JOIN user u on ut.userId = u.id
+        WHERE meetingId = #{meetingId}
+    </select>
+
+    <select id="getMeetingIdByPage" resultType="Integer">
+        SELECT id
+        FROM meeting
+        LIMIT #{firstIndex}, #{pageSize}
+    </select>
+
+    <select id="getUnregisteredMeetingIdByPageAndUserId" resultType="Integer">
+        SELECT id
+        FROM meeting
+        WHERE id not in (
+            SELECT m.id as id
+            FROM meeting_user mu
+                INNER JOIN meeting m on mu.meetingId = m.id
+            WHERE mu.userId = #{userId}
+        ) AND meetingStatus != 3 AND isGroupMeeting = 0
+        LIMIT #{firstIndex}, #{pageSize}
+    </select>
+
+    <select id="getUnregisteredMeetingIdByPageAndTeamId" resultType="Integer">
+        SELECT id
+        FROM meeting
+        WHERE id not in (
+            SELECT m.id as id
+            FROM meeting_team mt
+                INNER JOIN meeting m on mt.meetingId = m.id
+            WHERE mt.teamId = #{teamId}
+        ) AND meetingStatus != 3 AND isGroupMeeting = 1
+        LIMIT #{firstIndex}, #{pageSize}
+    </select>
+
+    <select id="getUnregisteredMeetingCountByUserId" resultType="Integer">
+        SELECT count(*) as cnt
+        FROM meeting
+        WHERE id not in (
+            SELECT m.id as id
+            FROM meeting_user mu
+                INNER JOIN meeting m on mu.meetingId = m.id
+            WHERE mu.userId = #{userId}
+        ) AND meetingStatus != 3 AND isGroupMeeting = 0
+    </select>
+
+    <select id="getUnregisteredMeetingCountByTeamId" resultType="Integer">
+        SELECT count(*) as cnt
+        FROM meeting
+        WHERE id not in (
+            SELECT m.id as id
+            FROM meeting_team mt
+                INNER JOIN meeting m on mt.meetingId = m.id
+            WHERE mt.teamId = #{teamId}
+        ) AND meetingStatus != 3 AND isGroupMeeting = 1
+    </select>
+
+    <select id="getMeetingIdByUserId" resultType="Integer">
+        SELECT m.id as id
+        FROM meeting_user mu
+            INNER JOIN meeting m on mu.meetingId = m.id
+        WHERE mu.userId = #{userId}
+    </select>
+
+    <select id="getMeetingIdByTeamId" resultType="Integer">
+        SELECT m.id as id
+        FROM meeting_team mt
+            INNER JOIN meeting m on mt.meetingId = m.id
+        WHERE mt.teamId = #{teamId}
+    </select>
+
+    <update id="deleteById">
+        UPDATE meeting
+        SET meetingStatus = 3
+        WHERE id = #{meetingId}
+    </update>
+
+    <resultMap type="com.tavern.ling.entity.Meeting" id="meetingMap">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="hostId" column="hostId"/>
+        <result property="meetingTime" column="meetingTime"/>
+        <result property="isGroupMeeting" column="isGroupMeeting"/>
+        <result property="meetingStatus" column="meetingStatus"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <resultMap type="com.tavern.ling.entity.IndividualMeeting" id="individualMeetingMap" extends="meetingMap">
+        <collection property="participants" ofType="com.tavern.ling.entity.Participant" javaType="java.util.List">
+            <result property="id" column="uid"/>
+            <result property="fName" column="fName"/>
+            <result property="lName" column="lName"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="com.tavern.ling.entity.GroupMeeting" id="groupMeetingMap" extends="meetingMap">
+        <collection property="participants" ofType="com.tavern.ling.entity.Team" javaType="java.util.List">
+            <result property="id" column="tid"/>
+            <result property="numOfMember" column="tnum"/>
+            <collection property="member" ofType="com.tavern.ling.entity.Participant" javaType="java.util.List">
+                <id property="id" column="uid"/>
+                <result property="fName" column="fName"/>
+                <result property="lName" column="lName"/>
+            </collection>
+        </collection>
+    </resultMap>
+</mapper>
